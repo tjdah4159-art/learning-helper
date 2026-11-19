@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>에듀업 강의 도우미 | 2026-11-11 학기 (24학점)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    .tab-btn.active {
+      background-color: #4f46e5;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);
+    }
+    .course-tab-btn.active {
+      background-color: #eef2ff;
+      color: #4338ca;
+      border-color: #6366f1;
+    }
+    .week-pill.active {
+      background-color: #4f46e5;
+      color: #ffffff;
+      border-color: #4f46e5;
+    }
+    .week-pill.is-exam {
+      border-style: dashed;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Top Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+          E
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">에듀업 강의 도우미</h1>
+          <p class="text-[11px] text-slate-500">2026-11-11 ~ 2027-02-23 (15주) · 8과목 24학점</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="semesterBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100"></span>
+        <button id="notifyBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">
+          알림 켜기
+        </button>
+        <button id="openBackupBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          백업/복원
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 pb-2">
+      <nav class="flex items-center gap-1.5 overflow-x-auto custom-scroll" aria-label="주요 메뉴">
+        <button type="button" data-tab="dashboard" class="tab-btn active shrink-0 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition">
+          이번 주 학습
+        </button>
+        <button type="button" data-tab="syllabus" class="tab-btn shrink-0 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+          과목별 강의계획서·노트
+        </button>
+        <button type="button" data-tab="assessments" class="tab-btn shrink-0 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+          평가·일정 한눈에
+        </button>
+        <button type="button" data-tab="guide" class="tab-btn shrink-0 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+          작성 도우미·수칙
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main 2-Column Workspace -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <!-- Left Main Column (8 cols on lg) -->
+    <main class="lg:col-span-8 space-y-4 min-w-0">
+      <!-- Compact Top KPI Strip -->
+      <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-500">전체 학기 진도</div>
+          <div class="mt-0.5 flex items-baseline justify-between">
+            <span id="kpiTotalProgress" class="text-xl font-bold text-indigo-600">0%</span>
+            <span id="kpiTotalCount" class="text-[11px] text-slate-400">0/120주</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div id="kpiTotalBar" class="h-full bg-indigo-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-500">선택 주차 완료</div>
+          <div class="mt-0.5 flex items-baseline justify-between">
+            <span id="kpiWeekDone" class="text-xl font-bold text-emerald-600">0/8</span>
+            <span id="kpiWeekLabel" class="text-[11px] text-slate-400">2주차</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div id="kpiWeekBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-500">종강 D-Day</div>
+          <div class="mt-0.5 flex items-baseline justify-between">
+            <span id="kpiDDay" class="text-xl font-bold text-slate-900">D-97</span>
+            <span class="text-[11px] text-slate-400">02-23</span>
+          </div>
+          <p class="mt-1.5 text-[11px] text-slate-500 truncate">중간(8주) · 기말(15주)</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-500">평가 완료</div>
+          <div class="mt-0.5 flex items-baseline justify-between">
+            <span id="kpiAssessDone" class="text-xl font-bold text-amber-600">0/48</span>
+            <span class="text-[11px] text-slate-400">8과목×6</span>
+          </div>
+          <p class="mt-1.5 text-[11px] text-slate-500 truncate">참여·과제·시험·토론</p>
+        </div>
+      </section>
+
+      <!-- TAB 1: Dashboard (이번 주 학습) -->
+      <section id="tab-dashboard" class="tab-panel space-y-3.5">
+        <div id="urgentAlertBox" class="hidden bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-1.5"></div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">주차별 진도 체크 (1~15주차)</h2>
+              <p class="text-[11px] text-slate-500">동영상 100% + 페이지 진도(1~5단계 'O') 완료 시 출석 인정</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <label class="inline-flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer select-none">
+                <input id="filterIncompleteToggle" type="checkbox" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                미완료만
+              </label>
+              <button id="markAllWeekBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition">
+                이번 주 전체 완료
+              </button>
+            </div>
+          </div>
+          <div id="weekSelector" class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1"></div>
+        </div>
+
+        <div id="weeklyCourseGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+      </section>
+
+      <!-- TAB 2: Single-Course Syllabus Tabs (과목별 강의계획서·노트) -->
+      <section id="tab-syllabus" class="tab-panel hidden space-y-3.5">
+        <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
+          <div id="courseTabBar" class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1">
+            <!-- 8 course tabs populated by JS -->
+          </div>
+        </div>
+
+        <div id="singleSyllabusView" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <!-- Single selected course syllabus + week table + personal note -->
+        </div>
+      </section>
+
+      <!-- TAB 3: Assessments Matrix (평가·일정 한눈에) -->
+      <section id="tab-assessments" class="tab-panel hidden space-y-3.5">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+          <p class="text-xs text-amber-900">
+            <strong>성적 산출 기준(상대평가):</strong> 중간 30 + 기말 30 + 출석 15 + 과제 10 + 토론 5 + 쪽지 5 + 참여 5 = 100점
+          </p>
+          <span class="text-[11px] text-amber-700 font-medium">셀을 클릭하면 완료 토글 · 과목명 옆 '입력'으로 점수/일정 수정</span>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto custom-scroll">
+          <table class="w-full text-left border-collapse min-w-[720px]">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600">
+                <th class="py-2.5 px-3">과목명</th>
+                <th class="py-2.5 px-2 text-center">참여(5)</th>
+                <th class="py-2.5 px-2 text-center">과제(10)</th>
+                <th class="py-2.5 px-2 text-center">중간(30)</th>
+                <th class="py-2.5 px-2 text-center">쪽지(5)</th>
+                <th class="py-2.5 px-2 text-center">토론(5)</th>
+                <th class="py-2.5 px-2 text-center">기말(30)</th>
+                <th class="py-2.5 px-3 text-right">예상총점</th>
+              </tr>
+            </thead>
+            <tbody id="assessmentTableBody" class="divide-y divide-slate-100 text-xs">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 4: Writing Helper & Edup Rules (작성 도우미·수칙) -->
+      <section id="tab-guide" class="tab-panel hidden space-y-3.5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">학습계획서 · 자기소개서 · 토론 작성 도우미</h2>
+              <p class="text-[11px] text-slate-500">글자수·줄수 제한을 실시간으로 확인하고 복사하세요.</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" data-counter-mode="plan" class="counter-mode-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white">학습계획서 (300자+)</button>
+              <button type="button" data-counter-mode="intro" class="counter-mode-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">자기소개서 (300자+)</button>
+              <button type="button" data-counter-mode="debate" class="counter-mode-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">토론 (500자·10줄↓)</button>
+            </div>
+            <div id="counterRuleHint" class="text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg p-2">
+              개강 후 2주간만 작성 가능(추가제출 없음). 과목마다 다르게 최소 300자 이상 작성해야 합니다.
+            </div>
+            <div id="debateTitleWrap" class="hidden space-y-1">
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>토론 제목 (50자 이내)</span>
+                <span id="debateTitleCount" class="font-semibold">0 / 50자</span>
+              </div>
+              <input id="debateTitleInput" type="text" placeholder="토론 제목 입력..." class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>본문 내용</span>
+                <span id="counterStats" class="font-semibold text-slate-700">0자 · 0줄</span>
+              </div>
+              <textarea id="counterTextarea" rows="6" placeholder="여기에 초안을 작성하세요..." class="w-full p-2.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed"></textarea>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span id="counterPassBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">작성 대기</span>
+              <div class="flex gap-1.5">
+                <button id="counterClearBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">비우기</button>
+                <button id="counterCopyBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white">복사</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-2.5 text-xs text-slate-700">
+            <h2 class="text-sm font-bold text-slate-900">에듀업 과락·감점 방지 핵심 수칙</h2>
+            <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-100">
+              <div class="font-bold text-rose-900">1. 출석 인정 기한 2주 &amp; 과락 기준</div>
+              <p class="mt-0.5 leading-relaxed">개강 주차 포함 <strong>2주 이내</strong> 수강해야 출석 인정. 총 30차시 중 <strong>7차시 이상 결석(80% 미만)</strong>, <strong>중간·기말 모두 불참</strong>, <strong>환산점수 60점 미만</strong>이면 과락입니다.</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-100">
+              <div class="font-bold text-amber-900">2. 영상 + 페이지 진도 'O' 100% 필수</div>
+              <p class="mt-0.5 leading-relaxed">영상 시간 완료 후 상단 <strong>1~5단계(학습목표~학습정리)</strong>가 모두 검은색 체크('O')인지 확인하고 학습 종료를 누르세요.</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-indigo-50 border border-indigo-100">
+              <div class="font-bold text-indigo-900">3. 참여도(5점): 자기소개서는 1과목만!</div>
+              <p class="mt-0.5 leading-relaxed"><strong>자기소개서(1점)</strong>는 1과목만 쓰면 자동 등록됩니다. <strong>학습계획서(2점, 초반 2주)</strong>와 <strong>중간평가서(2점, 9주차 1주)</strong>는 추가제출이 없습니다.</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="font-bold text-slate-900">4. 과제 · 토론 · 강의평가</div>
+              <p class="mt-0.5 leading-relaxed">과제 추가제출은 <strong>15% 감점</strong>. 토론은 댓글 미반영. 종강 후 <strong>강의평가</strong>를 해야 성적 확인이 가능합니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Persistent Right Sidebar (4 cols on lg) -->
+    <aside class="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
+      <!-- Today's Routine Card -->
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 id="todayRoutineTitle" class="text-sm font-bold text-slate-900">오늘의 학습 루틴</h2>
+            <p class="text-[11px] text-slate-500">직장인 퇴근 후 8과목 자동 분배</p>
+          </div>
+          <select id="routineModeSelect" aria-label="루틴 패턴 선택" class="text-xs rounded-lg border border-slate-200 px-2 py-1 bg-slate-50 font-semibold text-slate-700">
+            <option value="weekday2">평일 2과목×4일</option>
+            <option value="weekend">평일1+주말 집중</option>
+            <option value="daily">매일 1~2과목</option>
+          </select>
+        </div>
+
+        <div id="todayHighlightBox" class="p-3 rounded-xl bg-indigo-50 border border-indigo-100 space-y-2">
+          <!-- populated by JS -->
+        </div>
+
+        <div id="routineMiniList" class="space-y-1.5 text-xs">
+          <!-- compact 7-day routine summary -->
+        </div>
+      </div>
+
+      <!-- Persistent Focus Timer Card -->
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900">집중 타이머</h2>
+          <button id="muteToggleBtn" type="button" class="text-[11px] px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium">
+            알림음 켜짐
+          </button>
+        </div>
+
+        <div class="text-center py-3 bg-slate-50 rounded-xl border border-slate-100">
+          <div id="timerDisplay" class="text-3xl font-bold tracking-tight text-indigo-600 tabular-nums">25:00</div>
+          <div id="timerStatus" class="text-[11px] text-slate-500 mt-1">대기 중 · 25분 모드</div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-1.5">
+          <button type="button" data-minutes="25" class="preset-timer-btn py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100">25분</button>
+          <button type="button" data-minutes="50" class="preset-timer-btn py-1.5 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">50분</button>
+          <button type="button" data-minutes="10" class="preset-timer-btn py-1.5 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">10분 휴식</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="timerStartBtn" type="button" class="py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition">시작 / 정지</button>
+          <button id="timerResetBtn" type="button" class="py-2 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">초기화</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal: Edit Assessment Date & Score -->
+  <div id="assessModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="assessModalTitle" class="text-base font-bold text-slate-900">평가 일정 및 점수 입력</h3>
+        <button id="closeAssessModalBtn" type="button" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">&times;</button>
+      </div>
+      <div id="assessModalBody" class="space-y-2.5 max-h-[60vh] overflow-y-auto custom-scroll pr-1"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="cancelAssessModalBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">취소</button>
+        <button id="saveAssessModalBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Backup & Restore -->
+  <div id="backupModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">학습 데이터 백업 및 복원</h3>
+        <button id="closeBackupModalBtn" type="button" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">&times;</button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        진도 체크, 평가 일정, 과목별 메모는 브라우저에 자동 저장됩니다. JSON 파일로 백업하거나 불러올 수 있습니다.
+      </p>
+      <div class="space-y-2.5">
+        <button id="exportJsonBtn" type="button" class="w-full py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+          JSON 백업 파일 다운로드
+        </button>
+        <label class="block w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 text-center cursor-pointer transition">
+          JSON 백업 파일 불러오기
+          <input id="importJsonInput" type="file" accept=".json,application/json" class="hidden" />
+        </label>
+        <div class="pt-2 border-t border-slate-100">
+          <button id="askResetBtn" type="button" class="w-full py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition">
+            모든 학습 기록 초기화
+          </button>
+          <div id="confirmResetBox" class="hidden mt-2 p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-2">
+            <p class="text-xs text-rose-800 font-medium">정말 모든 진도와 메모를 초기화할까요?</p>
+            <div class="flex gap-2">
+              <button id="confirmResetYes" type="button" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white">네, 초기화</button>
+              <button id="confirmResetNo" type="button" class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-200">취소</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-medium shadow-lg"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'edup_study_assistant_2026_11_v1';
+      const SEMESTER_START = '2026-11-11';
+      const SEMESTER_END = '2027-02-23';
+
+      const COURSES = [
+        {
+          id: 'family',
+          name: '가족상담및가족치료',
+          prof: '안성원',
+          credits: 3,
+          url: 'http://www.edup.co.kr/application/lecturePlanView.html?gisu_idx=8407&lecCode=hansolmedia_2020_01_01_31_01_0500&shareCode=hansolmedia_2019_01_01_26_01_0340',
+          overview: '개인 및 가족의 문제를 해결하고 기능을 향상시키기 위한 전문적 실천기술로 가족상담 및 치료의 주요 모델과 실제를 학습합니다.',
+          topics: [
+            '가족상담 및 치료의 개념·특성·필요성',
+            '서구 및 한국 가족치료의 발전과정',
+            '체계론적 관점(경계선·항상성·삼각관계)',
+            '정신역동적 · 보웬(자아분화·가계도) 가족치료',
+            '경험적(휘태커·사티어 빙산치료) 가족치료',
+            '인지행동주의적 · 구조적 · 전략적 · 해결중심 · 이야기 가족치료'
+          ]
+        },
+        {
+          id: 'law',
+          name: '사회복지법제와실천',
+          prof: '서대석',
+          credits: 3,
+          url: 'http://edup.co.kr/application/lecturePlanView.html?gisu_idx=23441&lecCode=EDUP_2026_01_01_1445&shareCode=EDUP_2024_01_01_1058',
+          overview: '사회복지정책 및 서비스의 근간을 이루는 사회복지법의 개념, 이념, 체계를 이해하고 실천 현장의 법적 적용을 학습합니다.',
+          topics: [
+            '사회복지법의 개념·의의 및 이념',
+            '사회복지법의 법원과 체계',
+            '국민기초생활보장법의 목적과 수급자 종류',
+            '사회보험법과 공공부조·사회서비스법의 실천 적용'
+          ]
+        },
+        {
+          id: 'skill',
+          name: '사회복지실천기술론',
+          prof: '이현주',
+          credits: 3,
+          url: 'http://www3.edup.co.kr/application/lecturePlanView.html?gisu_idx=23442&lecCode=EDUP_2026_01_01_1446&shareCode=EDUP_2024_01_01_1059',
+          overview: '사회복지실천현장에서 활용하는 실천기술의 이론과 구체적 개입 기법을 체계적으로 익힙니다.',
+          topics: [
+            '관계 형성의 특성 및 전제조건(자아의식)',
+            '면접 및 의사소통 실천기술',
+            '개인·집단·가족 대상 사회복지실천모델 및 개입기법',
+            '사례관리 및 실천 평가 기술'
+          ]
+        },
+        {
+          id: 'research',
+          name: '사회복지조사론',
+          prof: '이현',
+          credits: 3,
+          url: 'https://www.edup.co.kr/application/lecturePlanView.html?gisu_idx=13905&lecCode=EDUP_2023_01_01_970&shareCode=EDUP_2021_01_01_601',
+          overview: '사회복지현장의 욕구와 프로그램 효과를 과학적으로 규명하기 위한 조사 설계, 측정, 자료수집 및 분석 방법을 학습합니다.',
+          topics: [
+            '측정의 오류, 신뢰도와 타당도의 관계',
+            '척도의 활용 및 질문지·질문문항 작성',
+            '관찰법과 면접법의 종류 및 과정',
+            '실험디자인(원시·순수·유사실험)과 단일사례조사',
+            '내용분석, 질적 조사, 욕구조사 및 프로그램 평가'
+          ]
+        },
+        {
+          id: 'intro',
+          name: '사회복지학개론',
+          prof: '최세연',
+          credits: 3,
+          url: 'https://www.edup.co.kr/application/lecturePlanView.html?gisu_idx=11397&lecCode=EDUP_2022_01_01_847&shareCode=hansolmedia_2020_01_01_31_01_0465',
+          overview: '사회복지의 기초 개념과 가치, 역사적 발달 과정, 주요 제도와 분야별 실천 영역을 폭넓게 다룹니다.',
+          topics: [
+            '인간의 욕구, 사회복지의 동기·구성요소 및 가치',
+            '사회복지사의 역할',
+            '영국·미국·한국 사회복지의 역사적 변천',
+            '공공부조의 원리·원칙·유형과 과제',
+            '사회복지실천기술과 대상별 실천모델'
+          ]
+        },
+        {
+          id: 'admin',
+          name: '사회복지행정론',
+          prof: '배화정',
+          credits: 3,
+          url: 'http://www.edup.co.kr/application/lecturePlanView.html?gisu_idx=11609&lecCode=EDUP_2022_01_01_829&shareCode=EDUP_2021_01_01_602',
+          overview: '사회복지조직을 효과적으로 운영하고 서비스를 전달하기 위한 행정 이론, 조직·인사·마케팅 관리 기법을 학습합니다.',
+          topics: [
+            '사회복지행정의 가치, 과정 및 행정가의 역할',
+            '고전·인간관계·상황·체계·조직환경·현대조직이론',
+            '조직구조 설계, 이사회·위원회, 조직 네트워크',
+            '인사관리, 직원능력개발, 동기부여, 직무평가',
+            '사회복지 마케팅 및 PR·홍보 전략'
+          ]
+        },
+        {
+          id: 'human',
+          name: '인간행동과사회환경',
+          prof: '오봉욱',
+          credits: 3,
+          url: 'http://edup.co.kr/application/lecturePlanView.html?gisu_idx=23750&lecCode=EDUP_2026_01_01_1456&shareCode=EDUP_2024_01_01_1076',
+          overview: '환경 속의 인간(PIE) 관점에서 성격·발달이론과 개인·가족·사회문화 체계의 상호작용을 전 생애주기에 걸쳐 학습합니다.',
+          topics: [
+            '정신분석(프로이트)·에릭슨·아들러·융 이론',
+            '행동주의(파블로프·스키너·반두라) 및 피아제·콜버그',
+            '인본주의(매슬로우·로저스), 체계·생태체계·다문화 이론',
+            '태아·영유아·아동·청소년·청년·중년·노년기 발달과제',
+            '인권·사회정의와 전 생애 사회복지실천'
+          ]
+        },
+        {
+          id: 'mental',
+          name: '정신건강론',
+          prof: '이은진',
+          credits: 3,
+          url: 'http://m.edup.co.kr/application/lecturePlanView.html?gisu_idx=23508&lecCode=EDUP_2026_01_01_1457&shareCode=EDUP_2024_01_01_1078',
+          overview: '현대인의 정신건강을 이해하고 정신건강 증진을 위한 기본 지식과 정신건강증진기관의 역할을 학습합니다.',
+          topics: [
+            '정신건강의 정의와 기준',
+            '정신건강증진기관의 종류와 주요 역할',
+            '생애주기별 정신건강 이슈 및 예방·개입',
+            '스트레스 대처 및 정신건강 증진 실천'
+          ]
+        }
+      ];
+
+      const ASSESS_ITEMS = [
+        { key: 'participation', label: '참여', max: 5, hint: '학습계획서/중간평가' },
+        { key: 'assignment', label: '과제', max: 10, hint: '리포트' },
+        { key: 'midterm', label: '중간고사', max: 30, hint: '1~7주' },
+        { key: 'quizNote', label: '쪽지시험', max: 5, hint: '5문항' },
+        { key: 'discussion', label: '토론', max: 5, hint: '500자↓' },
+        { key: 'final', label: '기말고사', max: 30, hint: '9~14주' }
+      ];
+
+      function computeCurrentWeek() {
+        const now = new Date();
+        const start = new Date(SEMESTER_START + 'T00:00:00');
+        const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+        const wk = Math.floor(diffDays / 7) + 1;
+        return Math.max(1, Math.min(15, wk));
+      }
+
+      function computeDDay() {
+        const now = new Date();
+        const end = new Date(SEMESTER_END + 'T23:59:59');
+        const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+        return diff >= 0 ? 'D-' + diff : '종강 +' + Math.abs(diff);
+      }
+
+      function createDefaultState() {
+        const weeklyProgress = {};
+        const assessments = {};
+        const notes = {};
+        COURSES.forEach((c) => {
+          weeklyProgress[c.id] = {};
+          for (let w = 1; w <= 15; w++) {
+            weeklyProgress[c.id][w] = { video: false, pdf: false, quiz: false };
+          }
+          assessments[c.id] = {
+            participation: { done: false, date: '', score: null },
+            assignment: { done: false, date: '', score: null },
+            midterm: { done: false, date: '', score: null },
+            quizNote: { done: false, date: '', score: null },
+            discussion: { done: false, date: '', score: null },
+            final: { done: false, date: '', score: null }
+          };
+          notes[c.id] = '';
+        });
+        return {
+          selectedWeek: computeCurrentWeek(),
+          selectedCourseId: COURSES[0].id,
+          filterIncomplete: false,
+          routineMode: 'weekday2',
+          weeklyProgress,
+          assessments,
+          notes
+        };
+      }
+
+      function loadState() {
+        const def = createDefaultState();
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return def;
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, def, parsed, {
+            weeklyProgress: Object.assign({}, def.weeklyProgress, parsed.weeklyProgress || {}),
+            assessments: Object.assign({}, def.assessments, parsed.assessments || {}),
+            notes: Object.assign({}, def.notes, parsed.notes || {})
+          });
+        } catch (e) {
+          return def;
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      let state = loadState();
+      let editingCourseId = null;
+
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => el.classList.add('hidden'), 2200);
+      }
+
+      function isWeekComplete(courseId, week) {
+        const w = state.weeklyProgress[courseId] && state.weeklyProgress[courseId][week];
+        return Boolean(w && w.video);
+      }
+
+      function getCourseAttendanceScore(courseId) {
+        let done = 0;
+        for (let w = 1; w <= 15; w++) {
+          if (isWeekComplete(courseId, w)) done++;
+        }
+        return Number(((done / 15) * 15).toFixed(1));
+      }
+
+      function extractDatesFromStr(str) {
+        if (!str) return [];
+        return str.match(/\d{4}-\d{2}-\d{2}/g) || [];
+      }
+
+      function getUpcomingAlerts() {
+        const now = new Date();
+        const alerts = [];
+        const seen = new Set();
+        COURSES.forEach((c) => {
+          ASSESS_ITEMS.forEach((it) => {
+            const entry = state.assessments[c.id][it.key];
+            if (entry.done || !entry.date) return;
+            const found = extractDatesFromStr(entry.date);
+            if (!found.length) return;
+            const endStr = found[found.length - 1];
+            const startStr = found[0];
+            const diffDays = Math.ceil((new Date(endStr + 'T23:59:59') - now) / (1000 * 60 * 60 * 24));
+            if (diffDays >= 0 && diffDays <= 10) {
+              const key = `${it.label}|${startStr}|${endStr}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                alerts.push({ label: it.label, startStr, endStr, diffDays });
+              }
+            }
+          });
+        });
+        return alerts.sort((a, b) => a.diffDays - b.diffDays);
+      }
+
+      function renderUrgentAlerts() {
+        const box = document.getElementById('urgentAlertBox');
+        const currentWk = computeCurrentWeek();
+        const itemsHtml = [];
+        if (currentWk >= 2 && currentWk <= 14) {
+          const prevWk = currentWk - 1;
+          const unfinishedPrev = COURSES.filter((c) => !isWeekComplete(c.id, prevWk)).length;
+          if (unfinishedPrev > 0) {
+            itemsHtml.push(`<li><strong>${prevWk}주차 출석인정 마감 임박:</strong> 미완료 ${unfinishedPrev}과목 (개강 주차 포함 2주 이내 수강 필수)</li>`);
+          }
+        }
+        getUpcomingAlerts().forEach((a) => {
+          itemsHtml.push(`<li><strong>${a.label}</strong> (${a.startStr} ~ ${a.endStr}) — <span class="text-rose-700 font-bold">D-${a.diffDays}</span></li>`);
+        });
+        if (!itemsHtml.length) {
+          box.classList.add('hidden');
+          box.innerHTML = '';
+        } else {
+          box.classList.remove('hidden');
+          box.innerHTML = `
+            <div class="text-xs font-bold text-rose-900">놓치면 안 되는 마감 알림</div>
+            <ul class="text-xs text-rose-800 space-y-0.5 list-disc pl-4">${itemsHtml.join('')}</ul>
+          `;
+        }
+      }
+
+      function renderKPIs() {
+        const currentWk = computeCurrentWeek();
+        document.getElementById('semesterBadge').textContent = `현재 ${currentWk}주차`;
+        document.getElementById('kpiDDay').textContent = computeDDay();
+
+        let totalDone = 0;
+        let weekDoneCount = 0;
+        COURSES.forEach((c) => {
+          for (let w = 1; w <= 15; w++) {
+            if (isWeekComplete(c.id, w)) totalDone++;
+          }
+          if (isWeekComplete(c.id, state.selectedWeek)) weekDoneCount++;
+        });
+
+        const totalPct = Math.round((totalDone / 120) * 100);
+        document.getElementById('kpiTotalProgress').textContent = `${totalPct}%`;
+        document.getElementById('kpiTotalCount').textContent = `${totalDone}/120주`;
+        document.getElementById('kpiTotalBar').style.width = `${totalPct}%`;
+
+        const wkPct = Math.round((weekDoneCount / 8) * 100);
+        document.getElementById('kpiWeekDone').textContent = `${weekDoneCount}/8`;
+        document.getElementById('kpiWeekLabel').textContent = `${state.selectedWeek}주차`;
+        document.getElementById('kpiWeekBar').style.width = `${wkPct}%`;
+
+        let assessDone = 0;
+        COURSES.forEach((c) => {
+          ASSESS_ITEMS.forEach((it) => {
+            if (state.assessments[c.id][it.key].done) assessDone++;
+          });
+        });
+        document.getElementById('kpiAssessDone').textContent = `${assessDone}/48`;
+      }
+
+      function renderWeekSelector() {
+        const container = document.getElementById('weekSelector');
+        const currentWk = computeCurrentWeek();
+        let html = '';
+        for (let w = 1; w <= 15; w++) {
+          const active = w === state.selectedWeek ? 'active' : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200';
+          const examCls = (w === 8 || w === 15) ? 'is-exam' : '';
+          const tag = w === 8 ? '(중간)' : w === 15 ? '(기말)' : w === currentWk ? '·이번주' : '';
+          html += `<button type="button" data-week="${w}" class="week-pill shrink-0 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition ${active} ${examCls}">${w}주${tag}</button>`;
+        }
+        container.innerHTML = html;
+      }
+
+      function renderWeeklyCourses() {
+        const grid = document.getElementById('weeklyCourseGrid');
+        const wk = state.selectedWeek;
+        const filtered = COURSES.filter((c) => !state.filterIncomplete || !isWeekComplete(c.id, wk));
+
+        if (!filtered.length) {
+          grid.innerHTML = `
+            <div class="sm:col-span-2 bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center space-y-1">
+              <div class="text-sm font-bold text-emerald-800">${wk}주차 8과목을 모두 완료했습니다!</div>
+              <p class="text-xs text-emerald-700">필터를 해제하거나 다음 주차를 확인해 보세요.</p>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = filtered.map((c) => {
+          const prog = state.weeklyProgress[c.id][wk] || { video: false, pdf: false, quiz: false, c1: false, c2: false };
+          const c1 = Boolean(prog.c1 || prog.video);
+          const c2 = Boolean(prog.c2 || prog.video);
+          const partial = !prog.video && (c1 || c2);
+          const statusLabel = prog.video ? '완료' : partial ? '1/2차시' : '미수강';
+          const statusCls = prog.video ? 'bg-emerald-100 text-emerald-700' : partial ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500';
+          const doneWeeks = Array.from({ length: 15 }, (_, i) => i + 1).filter((w) => isWeekComplete(c.id, w)).length;
+          return `
+            <div class="bg-white rounded-xl p-3.5 border ${prog.video ? 'border-emerald-200 bg-emerald-50/20' : partial ? 'border-amber-200' : 'border-slate-200'} shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="text-sm font-bold text-slate-900 truncate">${c.name}</h3>
+                  <p class="text-[11px] text-slate-500">${c.prof} 교수 · 누적 ${doneWeeks}/15주</p>
+                </div>
+                <span class="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ${statusCls}">
+                  ${statusLabel}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-course="${c.id}" data-field="c1" class="toggle-step py-1.5 px-1 rounded-lg border text-[11px] font-semibold transition ${c1 ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                  ${c1 ? '✓ ' : ''}1차시
+                </button>
+                <button type="button" data-course="${c.id}" data-field="c2" class="toggle-step py-1.5 px-1 rounded-lg border text-[11px] font-semibold transition ${c2 ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                  ${c2 ? '✓ ' : ''}2차시
+                </button>
+                <button type="button" data-course="${c.id}" data-field="pdf" class="toggle-step py-1.5 px-1 rounded-lg border text-[11px] font-semibold transition ${prog.pdf ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                  ${prog.pdf ? '✓ ' : ''}교안
+                </button>
+                <button type="button" data-course="${c.id}" data-field="quiz" class="toggle-step py-1.5 px-1 rounded-lg border text-[11px] font-semibold transition ${prog.quiz ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                  ${prog.quiz ? '✓ ' : ''}퀴즈
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function splitExtractedSyllabus(rawNote) {
+        const marker = '[추출된 주차별 목차]';
+        if (!rawNote || !rawNote.includes(marker)) {
+          return { extractedLines: [], userMemo: rawNote || '' };
+        }
+        const idx = rawNote.indexOf(marker);
+        const before = rawNote.slice(0, idx).trim();
+        const after = rawNote.slice(idx + marker.length).trim();
+        const lines = after.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        return { extractedLines: lines, userMemo: before };
+      }
+
+      function renderSingleSyllabus() {
+        const tabBar = document.getElementById('courseTabBar');
+        tabBar.innerHTML = COURSES.map((c) => {
+          const active = c.id === state.selectedCourseId ? 'active font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+          return `<button type="button" data-course-tab="${c.id}" class="course-tab-btn shrink-0 px-3 py-1.5 rounded-lg border text-xs transition ${active}">${c.name}</button>`;
+        }).join('');
+
+        const c = COURSES.find((x) => x.id === state.selectedCourseId) || COURSES[0];
+        const rawNote = state.notes[c.id] || '';
+        const { extractedLines, userMemo } = splitExtractedSyllabus(rawNote);
+
+        const extractedHtml = extractedLines.length
+          ? `<div class="space-y-1.5">
+              <div class="text-xs font-bold text-slate-800">에듀업 추출 주차별 목차 (${extractedLines.length}개 항목)</div>
+              <div class="max-h-60 overflow-y-auto custom-scroll rounded-xl border border-slate-200 divide-y divide-slate-100 bg-slate-50/50">
+                ${extractedLines.map((line) => `<div class="px-3 py-2 text-xs text-slate-700 leading-relaxed">${line.replace(/</g, '&lt;')}</div>`).join('')}
+              </div>
+            </div>`
+          : `<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-100">아직 추출된 주차별 목차가 없습니다. 에듀업 로그인 상태에서 '전체 다시 동기화'를 누르면 자동으로 채워집니다.</div>`;
+
+        document.getElementById('singleSyllabusView').innerHTML = `
+          <div class="flex flex-wrap items-start justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">${c.name}</h2>
+              <p class="text-xs text-slate-500">${c.prof} 교수 · ${c.credits}학점 · 이론중심</p>
+            </div>
+            <a href="${c.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition">
+              에듀업 원문 보기 ↗
+            </a>
+          </div>
+
+          <p class="text-xs text-slate-700 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100">${c.overview}</p>
+
+          <div>
+            <div class="text-xs font-bold text-slate-800 mb-1.5">핵심 학습 주제</div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-600 list-disc pl-4">
+              ${c.topics.map((t) => `<li>${t}</li>`).join('')}
+            </ul>
+          </div>
+
+          ${extractedHtml}
+
+          <div class="pt-2 border-t border-slate-100 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-800">내 학습 메모 / 시험 포인트 (자동 저장)</label>
+            <textarea id="singleCourseMemo" data-note="${c.id}" rows="4" placeholder="교수님 강조사항, 과제 주제, 시험 팁을 적어두세요..." class="w-full p-3 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed">${userMemo.replace(/</g, '&lt;')}</textarea>
+          </div>
+        `;
+      }
+
+      function renderAssessmentsTable() {
+        const tbody = document.getElementById('assessmentTableBody');
+        tbody.innerHTML = COURSES.map((c) => {
+          const data = state.assessments[c.id];
+          const attScore = getCourseAttendanceScore(c.id);
+          let sum = 0;
+          let hasScore = false;
+          ASSESS_ITEMS.forEach((it) => {
+            const v = data[it.key].score;
+            if (typeof v === 'number' && !isNaN(v)) {
+              sum += v;
+              hasScore = true;
+            }
+          });
+          const total = (attScore + sum).toFixed(1);
+
+          const cells = ASSESS_ITEMS.map((it) => {
+            const entry = data[it.key];
+            const shortDate = (entry.date || '').replace(/\(AM 10:00 – PM 22:00\)/g, '').replace(/오전 10:00 ~ /g, '~').trim();
+            const label = entry.done ? '✓ 완료' : shortDate ? shortDate.slice(0, 18) : '-';
+            return `
+              <td class="py-2 px-1.5 text-center align-middle">
+                <button type="button" data-course="${c.id}" data-assess="${it.key}" title="${entry.date || it.hint}" class="toggle-assess w-full py-1.5 px-1.5 rounded-lg border text-[11px] leading-tight transition ${entry.done ? 'bg-emerald-50 border-emerald-200 text-emerald-700 font-bold' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}">
+                  ${label}
+                </button>
+              </td>
+            `;
+          }).join('');
+
+          return `
+            <tr class="hover:bg-slate-50/70">
+              <td class="py-2.5 px-3">
+                <div class="font-bold text-slate-900">${c.name}</div>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[11px] text-slate-500">${c.prof}</span>
+                  <button type="button" data-edit-assess="${c.id}" class="text-[11px] font-semibold text-indigo-600 hover:underline">입력</button>
+                </div>
+              </td>
+              ${cells}
+              <td class="py-2.5 px-3 text-right font-bold text-indigo-700 whitespace-nowrap">${hasScore ? total : attScore}점</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderRoutineSidebar() {
+        document.getElementById('routineModeSelect').value = state.routineMode;
+
+        const plans = {
+          weekday2: [
+            { dayIdx: 1, day: '월', items: [COURSES[0], COURSES[1]], tip: '2과목' },
+            { dayIdx: 2, day: '화', items: [COURSES[2], COURSES[3]], tip: '2과목' },
+            { dayIdx: 3, day: '수', items: [], tip: '교안 복습' },
+            { dayIdx: 4, day: '목', items: [COURSES[4], COURSES[5]], tip: '2과목' },
+            { dayIdx: 5, day: '금', items: [COURSES[6], COURSES[7]], tip: '2과목' },
+            { dayIdx: 6, day: '토', items: [], tip: '과제·토론' },
+            { dayIdx: 0, day: '일', items: [], tip: '주간 점검' }
+          ],
+          weekend: [
+            { dayIdx: 1, day: '월', items: [COURSES[0]], tip: '1과목' },
+            { dayIdx: 2, day: '화', items: [COURSES[1]], tip: '1과목' },
+            { dayIdx: 3, day: '수', items: [COURSES[2]], tip: '1과목' },
+            { dayIdx: 4, day: '목', items: [COURSES[3]], tip: '1과목' },
+            { dayIdx: 5, day: '금', items: [], tip: '휴식' },
+            { dayIdx: 6, day: '토', items: [COURSES[4], COURSES[5]], tip: '2과목' },
+            { dayIdx: 0, day: '일', items: [COURSES[6], COURSES[7]], tip: '2과목' }
+          ],
+          daily: [
+            { dayIdx: 1, day: '월', items: [COURSES[0], COURSES[1]], tip: '2과목' },
+            { dayIdx: 2, day: '화', items: [COURSES[2]], tip: '1과목' },
+            { dayIdx: 3, day: '수', items: [COURSES[3]], tip: '1과목' },
+            { dayIdx: 4, day: '목', items: [COURSES[4]], tip: '1과목' },
+            { dayIdx: 5, day: '금', items: [COURSES[5]], tip: '1과목' },
+            { dayIdx: 6, day: '토', items: [COURSES[6]], tip: '1과목' },
+            { dayIdx: 0, day: '일', items: [COURSES[7]], tip: '1과목' }
+          ]
+        };
+
+        const currentPlan = plans[state.routineMode] || plans.weekday2;
+        const todayIdx = new Date().getDay();
+        const wk = state.selectedWeek;
+        const todaySlot = currentPlan.find((p) => p.dayIdx === todayIdx) || currentPlan[0];
+        const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+        document.getElementById('todayRoutineTitle').textContent = `오늘(${dayNames[todayIdx]}) 루틴`;
+
+        const unfinishedWeek = COURSES.filter((c) => !isWeekComplete(c.id, wk));
+        const todayItemsHtml = todaySlot.items.length
+          ? todaySlot.items.map((c) => {
+              const done = isWeekComplete(c.id, wk);
+              return `
+                <button type="button" data-quick-done="${c.id}" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${done ? 'bg-emerald-100 text-emerald-800 line-through' : 'bg-white text-slate-800 border border-indigo-200 hover:bg-indigo-100/50'}">
+                  <span>${c.name}</span>
+                  <span>${done ? '완료 ✓' : '체크'}</span>
+                </button>
+              `;
+            }).join('')
+          : `<div class="text-xs text-indigo-800">오늘은 <strong>${todaySlot.tip}</strong> 날입니다. (이번 주 미완료 ${unfinishedWeek.length}과목)</div>`;
+
+        document.getElementById('todayHighlightBox').innerHTML = `
+          <div class="text-[11px] font-bold text-indigo-900">오늘 할 일 (${wk}주차)</div>
+          <div class="space-y-1.5">${todayItemsHtml}</div>
+        `;
+
+        document.getElementById('routineMiniList').innerHTML = currentPlan.map((slot) => {
+          const isToday = slot.dayIdx === todayIdx;
+          const names = slot.items.length ? slot.items.map((c) => c.name.slice(0, 5)).join(', ') : slot.tip;
+          return `
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg ${isToday ? 'bg-indigo-50 text-indigo-900 font-bold border border-indigo-100' : 'text-slate-600'}">
+              <span class="w-6 shrink-0">${slot.day}</span>
+              <span class="truncate text-right">${names}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderAll() {
+        renderUrgentAlerts();
+        renderKPIs();
+        renderWeekSelector();
+        renderWeeklyCourses();
+        renderSingleSyllabus();
+        renderAssessmentsTable();
+        renderRoutineSidebar();
+      }
+
+      // Tabs
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach((b) => {
+            b.classList.remove('active');
+            b.classList.add('text-slate-600', 'hover:bg-slate-100');
+          });
+          btn.classList.add('active');
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+          document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+          document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+        });
+      });
+
+      // Course Tabs in Syllabus
+      document.getElementById('courseTabBar').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-course-tab]');
+        if (!btn) return;
+        state.selectedCourseId = btn.dataset.courseTab;
+        saveState();
+        renderSingleSyllabus();
+      });
+
+      // Save Single Course Memo (preserving extracted syllabus block)
+      document.getElementById('singleSyllabusView').addEventListener('input', (e) => {
+        if (e.target.id !== 'singleCourseMemo') return;
+        const cid = e.target.dataset.note;
+        const { extractedLines } = splitExtractedSyllabus(state.notes[cid] || '');
+        const memo = e.target.value;
+        state.notes[cid] = extractedLines.length
+          ? `${memo}\n\n[추출된 주차별 목차]\n${extractedLines.join('\n')}`.trim()
+          : memo;
+        saveState();
+      });
+
+      // Week selection & filters
+      document.getElementById('weekSelector').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-week]');
+        if (!btn) return;
+        state.selectedWeek = Number(btn.dataset.week);
+        saveState();
+        renderAll();
+      });
+
+      const filterChk = document.getElementById('filterIncompleteToggle');
+      filterChk.checked = state.filterIncomplete;
+      filterChk.addEventListener('change', (e) => {
+        state.filterIncomplete = e.target.checked;
+        saveState();
+        renderWeeklyCourses();
+      });
+
+      document.getElementById('markAllWeekBtn').addEventListener('click', () => {
+        const wk = state.selectedWeek;
+        COURSES.forEach((c) => {
+          state.weeklyProgress[c.id][wk] = { video: true, pdf: true, quiz: true };
+        });
+        saveState();
+        renderAll();
+        showToast(`${wk}주차 8과목 전체 완료 처리되었습니다.`);
+      });
+
+      document.getElementById('weeklyCourseGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-step');
+        if (!btn) return;
+        const cid = btn.dataset.course;
+        const field = btn.dataset.field;
+        const wk = state.selectedWeek;
+        const cur = state.weeklyProgress[cid][wk];
+        cur[field] = !cur[field];
+        if (field === 'c1' || field === 'c2') {
+          cur.video = Boolean(cur.c1 && cur.c2);
+        }
+        saveState();
+        renderAll();
+      });
+
+      // Sidebar quick toggle & routine select
+      document.getElementById('todayHighlightBox').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-quick-done]');
+        if (!btn) return;
+        const cid = btn.dataset.quickDone;
+        const wk = state.selectedWeek;
+        state.weeklyProgress[cid][wk].video = !state.weeklyProgress[cid][wk].video;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('routineModeSelect').addEventListener('change', (e) => {
+        state.routineMode = e.target.value;
+        saveState();
+        renderRoutineSidebar();
+      });
+
+      // Assessment Table
+      document.getElementById('assessmentTableBody').addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.toggle-assess');
+        if (toggleBtn) {
+          const cid = toggleBtn.dataset.course;
+          const key = toggleBtn.dataset.assess;
+          state.assessments[cid][key].done = !state.assessments[cid][key].done;
+          saveState();
+          renderAll();
+          return;
+        }
+        const editBtn = e.target.closest('[data-edit-assess]');
+        if (editBtn) openAssessModal(editBtn.dataset.editAssess);
+      });
+
+      // Assessment Modal
+      function openAssessModal(courseId) {
+        editingCourseId = courseId;
+        const course = COURSES.find((c) => c.id === courseId);
+        document.getElementById('assessModalTitle').textContent = `${course.name} · 일정 및 점수`;
+        const data = state.assessments[courseId];
+        document.getElementById('assessModalBody').innerHTML = ASSESS_ITEMS.map((it) => {
+          const entry = data[it.key];
+          return `
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-900">${it.label} (${it.max}점)</span>
+                <label class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+                  <input type="checkbox" data-m-done="${it.key}" ${entry.done ? 'checked' : ''} class="rounded text-indigo-600" />
+                  완료
+                </label>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" data-m-date="${it.key}" value="${(entry.date || '').replace(/"/g, '&quot;')}" placeholder="일정/마감일" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" />
+                <input type="number" step="0.5" min="0" max="${it.max}" data-m-score="${it.key}" value="${entry.score !== null ? entry.score : ''}" placeholder="점수 (0~${it.max})" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" />
+              </div>
+            </div>
+          `;
+        }).join('');
+        const modal = document.getElementById('assessModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeAssessModal() {
+        const modal = document.getElementById('assessModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        editingCourseId = null;
+      }
+
+      document.getElementById('closeAssessModalBtn').addEventListener('click', closeAssessModal);
+      document.getElementById('cancelAssessModalBtn').addEventListener('click', closeAssessModal);
+      document.getElementById('saveAssessModalBtn').addEventListener('click', () => {
+        if (!editingCourseId) return;
+        ASSESS_ITEMS.forEach((it) => {
+          const doneEl = document.querySelector(`[data-m-done="${it.key}"]`);
+          const dateEl = document.querySelector(`[data-m-date="${it.key}"]`);
+          const scoreEl = document.querySelector(`[data-m-score="${it.key}"]`);
+          const rawScore = scoreEl.value.trim();
+          state.assessments[editingCourseId][it.key] = {
+            done: doneEl.checked,
+            date: dateEl.value.trim(),
+            score: rawScore === '' ? null : Number(rawScore)
+          };
+        });
+        saveState();
+        closeAssessModal();
+        renderAll();
+        showToast('평가 일정과 점수가 저장되었습니다.');
+      });
+
+      // Desktop Notification Helper
+      function sendTodayNotification() {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const wk = computeCurrentWeek();
+        const unfinished = COURSES.filter((c) => !isWeekComplete(c.id, wk)).length;
+        const alerts = getUpcomingAlerts();
+        const alertMsg = alerts.length ? ` | 마감임박: ${alerts[0].label} D-${alerts[0].diffDays}` : '';
+        new Notification('에듀업 강의 도우미', {
+          body: `${wk}주차 미완료 ${unfinished}과목${alertMsg}`
+        });
+      }
+
+      document.getElementById('notifyBtn').addEventListener('click', () => {
+        if (!('Notification' in window)) {
+          showToast('이 브라우저는 알림을 지원하지 않습니다.');
+          return;
+        }
+        Notification.requestPermission().then((perm) => {
+          if (perm === 'granted') {
+            sendTodayNotification();
+            showToast('브라우저 알림이 활성화되었습니다.');
+          } else {
+            showToast('알림 권한이 허용되지 않았습니다.');
+          }
+        });
+      });
+
+      // Writing Counter
+      let counterMode = 'plan';
+      function updateCounter() {
+        const text = document.getElementById('counterTextarea').value || '';
+        const title = document.getElementById('debateTitleInput').value || '';
+        const chars = text.length;
+        const lines = text ? text.split(/\r?\n/).length : 0;
+        document.getElementById('counterStats').textContent = `${chars}자 · ${lines}줄`;
+        document.getElementById('debateTitleCount').textContent = `${title.length} / 50자`;
+
+        const badge = document.getElementById('counterPassBadge');
+        if (counterMode === 'debate') {
+          const ok = chars > 0 && chars <= 500 && lines <= 10 && title.length <= 50;
+          badge.textContent = chars === 0 ? '작성 대기' : ok ? '기준 충족' : '글자수/줄수 초과';
+          badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (chars === 0 ? 'bg-slate-100 text-slate-600' : ok ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700');
+        } else {
+          const ok = chars >= 300;
+          badge.textContent = chars === 0 ? '작성 대기' : ok ? '기준 충족 (300자+)' : `${300 - chars}자 더 필요`;
+          badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (chars === 0 ? 'bg-slate-100 text-slate-600' : ok ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800');
+        }
+      }
+
+      document.querySelectorAll('.counter-mode-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          counterMode = btn.dataset.counterMode;
+          document.querySelectorAll('.counter-mode-btn').forEach((b) => {
+            b.className = b.dataset.counterMode === counterMode
+              ? 'counter-mode-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white'
+              : 'counter-mode-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
+          });
+          const hint = document.getElementById('counterRuleHint');
+          const titleWrap = document.getElementById('debateTitleWrap');
+          if (counterMode === 'plan') {
+            hint.textContent = '개강 후 2주간만 작성 가능(추가제출 없음). 과목마다 다르게 최소 300자 이상 작성해야 합니다.';
+            titleWrap.classList.add('hidden');
+          } else if (counterMode === 'intro') {
+            hint.textContent = '자기소개서는 1과목만 작성해도 나머지 과목에 자동 등록됩니다. 최소 300자 이상 작성하세요.';
+            titleWrap.classList.add('hidden');
+          } else {
+            hint.textContent = '토론은 제목 50자 이내, 본문 500자 이하·10줄 이하로 작성하세요. (남의 글 댓글은 점수 미반영)';
+            titleWrap.classList.remove('hidden');
+          }
+          updateCounter();
+        });
+      });
+
+      document.getElementById('counterTextarea').addEventListener('input', updateCounter);
+      document.getElementById('debateTitleInput').addEventListener('input', updateCounter);
+      document.getElementById('counterClearBtn').addEventListener('click', () => {
+        document.getElementById('counterTextarea').value = '';
+        document.getElementById('debateTitleInput').value = '';
+        updateCounter();
+      });
+      document.getElementById('counterCopyBtn').addEventListener('click', () => {
+        const ta = document.getElementById('counterTextarea');
+        if (!ta.value) {
+          showToast('복사할 내용이 없습니다.');
+          return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(ta.value).then(() => showToast('복사했습니다.')).catch(() => {
+            ta.select();
+            document.execCommand('copy');
+            showToast('복사했습니다.');
+          });
+        } else {
+          ta.select();
+          document.execCommand('copy');
+          showToast('복사했습니다.');
+        }
+      });
+
+      // Focus Timer
+      let timerTotalSec = 25 * 60;
+      let timerLeftSec = 25 * 60;
+      let timerRunning = false;
+      let timerInterval = null;
+      let timerMuted = false;
+
+      function playBeep() {
+        if (timerMuted) return;
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(660, ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.6);
+        } catch (e) {}
+      }
+
+      function updateTimerUI() {
+        const m = String(Math.floor(timerLeftSec / 60)).padStart(2, '0');
+        const s = String(timerLeftSec % 60).padStart(2, '0');
+        document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+      }
+
+      document.querySelectorAll('.preset-timer-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          const mins = Number(btn.dataset.minutes);
+          timerTotalSec = mins * 60;
+          timerLeftSec = timerTotalSec;
+          document.getElementById('timerStatus').textContent = `대기 중 · ${mins}분 모드`;
+          updateTimerUI();
+        });
+      });
+
+      document.getElementById('timerStartBtn').addEventListener('click', () => {
+        if (timerRunning) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          document.getElementById('timerStatus').textContent = '일시정지됨';
+          return;
+        }
+        timerRunning = true;
+        document.getElementById('timerStatus').textContent = '집중 학습 진행 중...';
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (timerLeftSec > 0) {
+            timerLeftSec--;
+            updateTimerUI();
+          } else {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            document.getElementById('timerStatus').textContent = '완료! 수고하셨습니다.';
+            playBeep();
+            showToast('집중 타이머가 완료되었습니다!');
+          }
+        }, 1000);
+      });
+
+      document.getElementById('timerResetBtn').addEventListener('click', () => {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        timerLeftSec = timerTotalSec;
+        document.getElementById('timerStatus').textContent = '초기화됨';
+        updateTimerUI();
+      });
+
+      document.getElementById('muteToggleBtn').addEventListener('click', (e) => {
+        timerMuted = !timerMuted;
+        e.target.textContent = timerMuted ? '알림음 꺼짐' : '알림음 켜짐';
+      });
+
+      // Backup Modal
+      const backupModal = document.getElementById('backupModal');
+      document.getElementById('openBackupBtn').addEventListener('click', () => {
+        backupModal.classList.remove('hidden');
+        backupModal.classList.add('flex');
+      });
+      document.getElementById('closeBackupModalBtn').addEventListener('click', () => {
+        backupModal.classList.add('hidden');
+        backupModal.classList.remove('flex');
+      });
+
+      document.getElementById('exportJsonBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'edup_study_backup_2026_11.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('백업 파일을 다운로드했습니다.');
+      });
+
+      document.getElementById('importJsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            state = Object.assign({}, createDefaultState(), parsed);
+            saveState();
+            renderAll();
+            backupModal.classList.add('hidden');
+            backupModal.classList.remove('flex');
+            showToast('백업 데이터를 불러왔습니다.');
+          } catch (err) {
+            showToast('올바른 JSON 백업 파일이 아닙니다.');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      document.getElementById('askResetBtn').addEventListener('click', () => {
+        document.getElementById('confirmResetBox').classList.remove('hidden');
+      });
+      document.getElementById('confirmResetNo').addEventListener('click', () => {
+        document.getElementById('confirmResetBox').classList.add('hidden');
+      });
+      document.getElementById('confirmResetYes').addEventListener('click', () => {
+        state = createDefaultState();
+        saveState();
+        renderAll();
+        document.getElementById('confirmResetBox').classList.add('hidden');
+        backupModal.classList.add('hidden');
+        backupModal.classList.remove('flex');
+        showToast('모든 학습 기록을 초기화했습니다.');
+      });
+
+      renderAll();
+      updateTimerUI();
+      sendTodayNotification();
+    })();
+  </script>
+</body>
+</html>
