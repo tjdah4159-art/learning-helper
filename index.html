@@ -101,9 +101,17 @@
             <div id="liveRemoteSub" class="text-[11px] text-indigo-200 truncate"></div>
           </div>
         </div>
-        <button id="refreshFirebaseBtn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/15 hover:bg-white/25 transition shrink-0">
-          새로고침
-        </button>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="remoteShutdownBtn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500 hover:bg-rose-600 text-white transition">
+            원격 PC 종료
+          </button>
+          <button id="remoteCancelBtn" type="button" class="hidden px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-400 hover:bg-amber-500 text-slate-900 transition">
+            종료 취소
+          </button>
+          <button id="refreshFirebaseBtn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/15 hover:bg-white/25 transition">
+            새로고침
+          </button>
+        </div>
       </div>
       <!-- Compact Top KPI Strip -->
       <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -398,6 +406,20 @@
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
         <button id="clearFirebaseBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50">연동 해제</button>
         <button id="saveFirebaseBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white">저장 및 동기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Remote Shutdown Confirm -->
+  <div id="shutdownModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3.5">
+      <h3 class="text-base font-bold text-slate-900">원격으로 PC를 종료할까요?</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        PC에서 <strong>edup_auto_shutdown.py</strong>가 실행 중이면 신호를 받은 뒤 60초 후 Windows가 종료됩니다. (60초 이내에 '종료 취소' 가능)
+      </p>
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="cancelShutdownModalBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">아니오</button>
+        <button id="confirmShutdownModalBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white">네, 종료 신호 보내기</button>
       </div>
     </div>
   </div>
@@ -1411,9 +1433,15 @@
           }
 
           banner.classList.remove('hidden');
+          const isShuttingDown = Boolean(data.allDone || data.remoteShutdown);
+          document.getElementById('remoteShutdownBtn').classList.toggle('hidden', isShuttingDown);
+          document.getElementById('remoteCancelBtn').classList.toggle('hidden', !isShuttingDown);
+
           if (data.live) {
             const lv = data.live;
-            document.getElementById('liveRemoteTitle').textContent = data.allDone
+            document.getElementById('liveRemoteTitle').textContent = data.remoteShutdown
+              ? '원격 PC 종료 신호 전송됨 (60초 카운트다운)'
+              : data.allDone
               ? '모든 과목 수강 완료! (PC 자동 종료 대기)'
               : `${lv.course || '에듀업'} · ${lv.week || ''} ${lv.chasi || ''} (${lv.status || '진행 중'})`;
             document.getElementById('liveRemoteSub').textContent = `수강 ${lv.studyTime || '-'} · 남은 ${lv.remainTime || '-'} · 업데이트 ${lv.updatedAt || '-'}`;
@@ -1470,6 +1498,52 @@
         showToast('Firebase 연동을 해제했습니다.');
       });
       document.getElementById('refreshFirebaseBtn').addEventListener('click', () => syncFromFirebase(false));
+
+      const shutdownModal = document.getElementById('shutdownModal');
+      document.getElementById('remoteShutdownBtn').addEventListener('click', () => {
+        if (!getFirebaseBaseUrl()) {
+          showToast('먼저 Firebase 연동을 설정해 주세요.');
+          return;
+        }
+        shutdownModal.classList.remove('hidden');
+        shutdownModal.classList.add('flex');
+      });
+      document.getElementById('cancelShutdownModalBtn').addEventListener('click', () => {
+        shutdownModal.classList.add('hidden');
+        shutdownModal.classList.remove('flex');
+      });
+      document.getElementById('confirmShutdownModalBtn').addEventListener('click', async () => {
+        const base = getFirebaseBaseUrl();
+        shutdownModal.classList.add('hidden');
+        shutdownModal.classList.remove('flex');
+        if (!base) return;
+        try {
+          await fetch(`${base}/edup_status.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ remoteShutdown: true })
+          });
+          showToast('원격 PC 종료 신호를 보냈습니다.');
+          syncFromFirebase(true);
+        } catch (e) {
+          showToast('종료 신호 전송에 실패했습니다.');
+        }
+      });
+      document.getElementById('remoteCancelBtn').addEventListener('click', async () => {
+        const base = getFirebaseBaseUrl();
+        if (!base) return;
+        try {
+          await fetch(`${base}/edup_status.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ remoteShutdown: false, allDone: false })
+          });
+          showToast('PC 종료 취소 신호를 보냈습니다.');
+          syncFromFirebase(true);
+        } catch (e) {
+          showToast('종료 취소 신호 전송에 실패했습니다.');
+        }
+      });
 
       renderAll();
       updateTimerUI();
